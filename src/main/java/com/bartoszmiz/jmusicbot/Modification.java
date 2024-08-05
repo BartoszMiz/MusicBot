@@ -77,12 +77,10 @@ public class Modification {
 			return;
 		}
 
-		final var playCommand = "play";
-		final var skipCommand = "skip";
-		if (command.startsWith(playCommand)) {
-			var query = command.substring(playCommand.length()).trim();
+		if (command.startsWith("play") || command.startsWith("p")) {
+			var query = command.substring(command.indexOf(' ')).trim();
 			sendPlayCommand(query);
-		} else if (command.startsWith(skipCommand)) {
+		} else if (command.startsWith("skip") || command.startsWith("s")) {
 			sendSkipCommand();
 		}
 	}
