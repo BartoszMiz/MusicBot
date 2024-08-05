@@ -15,6 +15,7 @@
  */
 package com.jagrosh.jmusicbot;
 
+import com.bartoszmiz.jmusicbot.Modification;
 import com.jagrosh.jdautilities.command.CommandClient;
 import com.jagrosh.jdautilities.command.CommandClientBuilder;
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
@@ -166,6 +167,9 @@ public class JMusicBot
                     + "attempting to connect, please make sure you're connected to the internet");
             System.exit(1);
         }
+
+        var mod = new Modification(bot, client);
+        mod.start();
     }
     
     private static CommandClient createCommandClient(BotConfig config, SettingsManager settings, Bot bot)
