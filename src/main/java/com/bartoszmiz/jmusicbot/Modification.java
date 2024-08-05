@@ -4,6 +4,7 @@ import com.jagrosh.jdautilities.command.CommandClient;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.jagrosh.jmusicbot.Bot;
 import com.jagrosh.jmusicbot.commands.music.PlayCmd;
+import com.jagrosh.jmusicbot.commands.music.SkipCmd;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -77,9 +78,12 @@ public class Modification {
 		}
 
 		final var playCommand = "play";
+		final var skipCommand = "skip";
 		if (command.startsWith(playCommand)) {
 			var query = command.substring(playCommand.length()).trim();
 			sendPlayCommand(query);
+		} else if (command.startsWith(skipCommand)) {
+			sendSkipCommand();
 		}
 	}
 
@@ -100,5 +104,24 @@ public class Modification {
 		);
 
 		playCommand.run(commandEvent);
+	}
+
+	private void sendSkipCommand() {
+		var message = new FakeMessage(user, guild, textChannel, jda);
+		var responseNumber = 69L; // IDK
+
+		var skipCommand = (SkipCmd)commandClient.getCommands().stream().filter((command -> command.getName().equals("skip"))).findFirst().get();
+
+		var commandEvent = new CommandEvent(
+				new MessageReceivedEvent(
+						jda,
+						responseNumber,
+						message
+				),
+				"",
+				commandClient
+		);
+
+		skipCommand.run(commandEvent);
 	}
 }
