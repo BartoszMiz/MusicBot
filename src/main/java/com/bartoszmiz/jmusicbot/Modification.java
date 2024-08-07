@@ -16,8 +16,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Scanner;
 
-import static com.jagrosh.jmusicbot.JMusicBot.LOG;
-
 public class Modification {
 	private static final Logger log = LoggerFactory.getLogger(Modification.class);
 	private final Bot bot;
@@ -59,14 +57,14 @@ public class Modification {
 		var port = settings.getPort();
 
 		try (var socket = new ServerSocket(port)) {
-			log.info(String.format("TCP socket opened on port %s", port));
+			log.info("TCP socket opened on port {}", port);
 			while (true) {
 				var connection = socket.accept();
-				log.info(String.format("Incoming connection from %s", connection.getRemoteSocketAddress()));
+				log.info("Incoming connection from {}", connection.getRemoteSocketAddress());
 				handleConnection(connection);
 			}
 		} catch (IOException ex) {
-			log.error(String.format("Failed to initialize TCP server: %s", ex.getMessage()));
+			log.error("Failed to initialize TCP server: {}", ex.getMessage());
 		}
 	}
 
@@ -103,7 +101,7 @@ public class Modification {
 
 			return settings;
 		} catch (FileNotFoundException | NumberFormatException ex) {
-			log.error(String.format("Failed to read the TCP server settings: %s", ex.getMessage()));
+			log.error("Failed to read the TCP server settings: {}", ex.getMessage());
 			return null;
 		}
 	}
@@ -113,7 +111,7 @@ public class Modification {
 		try (var reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
 			command = reader.readLine();
 		} catch (IOException ex) {
-			log.error(String.format("Failed to handle connection: %s", ex.getMessage()));
+			log.error("Failed to handle connection: {}", ex.getMessage());
 			return;
 		}
 
