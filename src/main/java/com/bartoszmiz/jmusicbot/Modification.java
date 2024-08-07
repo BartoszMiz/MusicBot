@@ -117,10 +117,10 @@ public class Modification {
 			return;
 		}
 
-		if (command.startsWith("play") || command.startsWith("p")) {
+		if (command.startsWith("play")) {
 			var query = command.substring(command.indexOf(' ')).trim();
 			sendPlayCommand(query);
-		} else if (command.startsWith("skip") || command.startsWith("s")) {
+		} else if (command.startsWith("skip")) {
 			sendSkipCommand();
 		}
 	}
