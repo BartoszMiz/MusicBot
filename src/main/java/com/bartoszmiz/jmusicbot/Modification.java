@@ -8,29 +8,31 @@ import com.jagrosh.jmusicbot.commands.music.SkipCmd;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Scanner;
 
 import static com.jagrosh.jmusicbot.JMusicBot.LOG;
 
 public class Modification {
+	private static final Logger log = LoggerFactory.getLogger(Modification.class);
 	private final Bot bot;
 	private final JDA jda;
 	private final CommandClient commandClient;
-	private final int port;
+	private final String settingsPath = "serversettings.txt";
 
 	private Guild guild;
 	private TextChannel textChannel;
 	private User user;
-	private VoiceChannel voiceChannel;
 
 	public Modification(Bot bot, CommandClient commandClient) {
 		this.bot = bot;
 		this.jda = bot.getJDA();
 		this.commandClient = commandClient;
-		this.port = 8080;
 	}
 
 	public void start() {
@@ -40,40 +42,78 @@ public class Modification {
 			return;
 		}
 
-		var guildId = 0L; // TODO
+		var settings = readSettings();
+		if (settings == null) {
+			return;
+		}
+
+		var guildId = settings.getGuildId();
 		guild = jda.getGuildById(guildId);
 
-		var channelId = 0L; // TODO
+		var channelId = settings.getTextChannelId();
 		textChannel = guild.getTextChannelById(channelId);
 
-		var userId = 0L; // TODO
+		var userId = settings.getUserId();
 		user = jda.retrieveUserById(userId).complete();
 
-		var voiceChannelId = 0L; // TODO
-		voiceChannel = guild.getVoiceChannelById(voiceChannelId);
+		var port = settings.getPort();
 
 		try (var socket = new ServerSocket(port)) {
-			LOG.info(String.format("TCP socket opened on port %s", port));
+			log.info(String.format("TCP socket opened on port %s", port));
 			while (true) {
 				var connection = socket.accept();
-				LOG.info(String.format("Incoming connection from %s", connection.getRemoteSocketAddress()));
+				log.info(String.format("Incoming connection from %s", connection.getRemoteSocketAddress()));
 				handleConnection(connection);
 			}
 		} catch (IOException ex) {
-			LOG.error(String.format("Failed to initialize TCP server: %s", ex.getMessage()));
-			return;
+			log.error(String.format("Failed to initialize TCP server: %s", ex.getMessage()));
+		}
+	}
+
+	/*
+	Settings format (put this in serversettings.txt):
+	guild = <id>
+	user = <id>
+	text_channel = <id>
+	port = <id>
+	 */
+	private Settings readSettings() {
+		try {
+			var settingsFile = new File(settingsPath);
+			var scanner = new Scanner(settingsFile);
+
+			var settings = new Settings();
+			while (scanner.hasNextLine()) {
+				var line = scanner.nextLine();
+				var segments = line.split(" ");
+				if (segments.length != 3 || !segments[1].equals("=")) {
+					return null;
+				}
+
+				if (segments[0].equalsIgnoreCase("guild")) {
+					settings.setGuildId(Long.parseLong(segments[2]));
+				} else if (segments[0].equalsIgnoreCase("user")) {
+					settings.setUserId(Long.parseLong(segments[2]));
+				} else if (segments[0].equalsIgnoreCase("text_channel")) {
+					settings.setTextChannelId(Long.parseLong(segments[2]));
+				} else if (segments[0].equalsIgnoreCase("port")) {
+					settings.setPort(Integer.parseInt(segments[2]));
+				}
+			}
+
+			return settings;
+		} catch (FileNotFoundException | NumberFormatException ex) {
+			log.error(String.format("Failed to read the TCP server settings: %s", ex.getMessage()));
+			return null;
 		}
 	}
 
 	private void handleConnection(Socket connection) {
 		String command;
 		try (var reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-			var writer = new OutputStreamWriter(connection.getOutputStream());
 			command = reader.readLine();
-			writer.write("Message received!\n");
-			writer.flush();
 		} catch (IOException ex) {
-			LOG.error(String.format("Failed to handle connection: %s", ex.getMessage()));
+			log.error(String.format("Failed to handle connection: %s", ex.getMessage()));
 			return;
 		}
 
