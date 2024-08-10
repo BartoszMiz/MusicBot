@@ -8,8 +8,6 @@ RUN mvn clean package
 FROM openjdk:24-slim-bookworm
 WORKDIR /app
 COPY --from=build /app/target/JMusicBot-Snapshot-All.jar .
-COPY config.txt .
-COPY serversettings.txt .
 EXPOSE 8080
 ENTRYPOINT ["java", "-Dnogui=true", "-jar", "JMusicBot-Snapshot-All.jar"]
 
